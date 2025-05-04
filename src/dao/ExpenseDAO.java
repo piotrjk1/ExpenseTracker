@@ -4,8 +4,10 @@ import model.Expense;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,14 +39,50 @@ public class ExpenseDAO {
             String query = "SELECT * FROM " + tableName;
             statement = conn.createStatement();
             ResultSet rs = statement.executeQuery(query);
+
+            while(rs.next()){
+                int id = rs.getInt("id");
+                BigDecimal amount = rs.getBigDecimal("amount");
+                String description = rs.getString("description");
+                String category = rs.getString("category");
+                LocalDateTime date = rs.getTimestamp("expense_date").toLocalDateTime();
+                expenses.add(new Expense(id, amount, description, category, date));
+            }
         }catch(Exception e){
             System.out.println(e);
+            System.out.println("Expense list could not be retrieved");
         }
-        return null;
+        return expenses;
     }
 
     public void deleteExpenseById(Connection conn, int id){
-        //todo
+        PreparedStatement ps = null;
+        try{
+            String query = "DELETE FROM " + tableName + " WHERE id = ?";
+            ps = conn.prepareStatement(query);
+            // set the value of the parameter (id) at index 1 (the first ? in the query)
+            ps.setInt(1, id);
+            // Execute the update (DELETE in this case)
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected > 0){
+                System.out.println("Expense deleted successfully");
+            }else{
+                System.out.println("No expense found with id: " + id);
+            }
+
+        }catch(Exception e){
+            System.out.println(e);
+        } finally{
+            // Close PreparedStatement to avoid memory leaks
+            try{
+                if (ps != null){
+                    ps.close();
+                }
+            }catch(Exception e){
+                System.out.println(e);
+            }
+        }
     }
 
 }

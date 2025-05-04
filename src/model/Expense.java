@@ -18,4 +18,13 @@ public class Expense {
         this.category = category;
         this.date = date;
     }
+
+    @Override
+    public String toString(){
+        return "id: " + id + "\n" +
+                "amount: " + amount + " PLN.\n" +
+                "description: " + description + "\n" +
+                "category: " + category + "\n" +
+                "date: " + date;
+    }
 }
