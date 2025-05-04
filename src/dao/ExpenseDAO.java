@@ -36,7 +36,7 @@ public class ExpenseDAO {
         Statement statement;
 
         try{
-            String query = "SELECT * FROM " + tableName;
+            String query = "SELECT * FROM " + tableName + " ORDER BY id";
             statement = conn.createStatement();
             ResultSet rs = statement.executeQuery(query);
 
@@ -53,6 +53,39 @@ public class ExpenseDAO {
             System.out.println("Expense list could not be retrieved");
         }
         return expenses;
+    }
+
+    public void updateExpense(Connection conn, int id, BigDecimal amount, String description, String category){
+        PreparedStatement ps = null;
+
+        try{
+            String query = "UPDATE " + tableName + " SET amount = ?, description = ?, category = ?" +
+                    " WHERE id = ?";
+            ps = conn.prepareStatement(query);
+
+            ps.setBigDecimal(1, amount);
+            ps.setString(2, description);
+            ps.setString(3, category);
+            ps.setInt(4, id);
+
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0){
+                System.out.println("Expense updated successfully");
+            }else{
+                System.out.println("No expense found with id: " + id);
+            }
+        }catch(Exception e){
+            System.out.println(e);
+        }finally {
+            // Close PreparedStatement to avoid memory leaks
+            try {
+                if (ps != null) {
+                    ps.close();
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
     }
 
     public void deleteExpenseById(Connection conn, int id){
@@ -83,6 +116,28 @@ public class ExpenseDAO {
                 System.out.println(e);
             }
         }
+    }
+
+    public boolean idExists(Connection conn, int id) {
+        Statement statement;
+
+        try {
+            String query = "SELECT COUNT(*) FROM " + tableName + " WHERE id = " + id;
+            statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            int count = 0;
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+            if (count == 0){
+                return false;
+            }else{
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
     }
 
 }
